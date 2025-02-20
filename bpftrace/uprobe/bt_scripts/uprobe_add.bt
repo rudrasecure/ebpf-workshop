@@ -1,0 +1,7 @@
+uprobe:/home/apocalypse0/Documents/ebpf-workshop/bpftrace/uprobe/add:add {
+ printf("uprobe: Called add() with arguments: a = %d, b = %d\n", arg0, arg1);
+  }
+
+  uretprobe:/home/apocalypse0/Documents/ebpf-workshop/bpftrace/uprobe/add:add {
+    printf("uretprobe: add() returned: %d\n", retval);
+  }

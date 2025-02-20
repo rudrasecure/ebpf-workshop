@@ -1,0 +1,2 @@
+tracepoint:syscalls:sys_enter_execve { printf("ENTER pid: %d -- comm:%s -- %s\n", pid,comm, str(args->filename)); } 
+tracepoint:syscalls:sys_exit_execve { printf("EXIT pid: %d -- ret: %d --comm %s\n",pid, args->ret,comm); }

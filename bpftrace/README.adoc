@@ -1,0 +1,16 @@
+= Tracing Syscalls
+
+== Resources
+
+NOTE: Some of the links for the bpftrace manuals may have shifted - please follow to the appropriate section. Please also select your relevant kernel version when reading the kernel code
+
+
+* BPFTrace Manual - https://github.com/bpftrace/bpftrace/blob/master/man/adoc/bpftrace.adoc
+* Kernel code for `sys_exit_execve` -  https://elixir.bootlin.com/linux/v5.15.126/source/fs/exec.c#L2090 
+
+== Execve syscall
+
+* syscalls directory - `/sys/kernel/debug/tracing/events/syscalls/`
+* Trace `sys_enter_execve` - `bpftrace -e 't:syscalls:sys_enter_execve { printf("pid: %d -- comm:%s\n", pid,comm); }'`
+* Trace `sys_enter_execve` with the filename - `bpftrace -e 't:syscalls:sys_enter_execve { printf("pid: %d -- comm:%s -- %s\n", pid,comm, str(args->filename)); }'`
+* 

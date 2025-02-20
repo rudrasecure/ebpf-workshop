@@ -1,0 +1,1 @@
+t:syscalls:sys_enter_write /args->fd == 1/ { printf("%s\n", str(args->buf)); }

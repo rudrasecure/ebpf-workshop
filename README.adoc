@@ -1,0 +1,18 @@
+= eBPF Workshop
+
+== Dependencies
+
+* *BPFTrace*: `sudo apt install bpftrace`
+* *Python Toolchain*: `sudo apt install libbpfcc-dev python3-bpfcc bpfcc-tools`
+* *C/C++ Toolchain*: `sudo apt install build-essential clang-18 llvm-18 libelf1 libelf-dev zlib1g-dev libbfd-dev libcap-dev linux-tools-common linux-tools-generic`
+* *Other good to have stuff*: `sudo apt install gcc make`
+
+
+== Resources for Malware Analysis
+
+* https://github.com/nikhilh-20/ELFEN
+* https://github.com/recontech404/Kairos
+
+== Malware development
+
+

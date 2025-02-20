@@ -1,0 +1,2 @@
+uprobe:/bin/bash:readline { printf("%s: ", str(arg0)); }
+uretprobe:/bin/bash:readline { printf("%s\n ", str(retval)); }

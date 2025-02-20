@@ -1,0 +1,93 @@
+= BPF Program Explanation: Tracking Syscalls with BCC
+
+This document explains the functionality of the BPF program and the user-space handler used to trace `sys_enter_openat` system calls. The kernel-side BPF program collects syscall information, and the user-space Python handler processes and prints it.
+
+== Kernel-Space Code Explanation
+
+1. **`#include <linux/sched.h>`**:
+   - This header is included to access kernel structures and functions related to task management, such as `TASK_COMM_LEN` and `bpf_get_current_comm`, which are used to retrieve the process's command name and other task-related details.
+
+2. **`BPF_PERF_OUTPUT(events);`**:
+   - This macro declares a **perf output buffer** named `events`. It allows the kernel BPF program to send data to user-space for further processing.
+
+3. **`struct data_t`**:
+   - This structure defines the data that will be sent to user-space. It includes:
+     - `pid`: The process ID of the program that triggered the `openat` syscall.
+     - `comm`: The command name of the process (up to `TASK_COMM_LEN` characters).
+     - `filename`: The filename being opened (max 256 characters).
+
+4. **`struct sys_enter_openat_args_t`**:
+   - This structure represents the arguments passed to the `openat` system call. It includes:
+     - `dfd`: Directory file descriptor.
+     - `filename`: Path of the file being opened.
+     - `flags`: Flags that control the file opening behavior.
+     - `mode`: File permissions if the file is created.
+
+5. **`sys_enter_openat_fn`**:
+   - This function is the tracepoint handler for the `sys_enter_openat` event. It performs the following:
+     - Extracts the process ID using `bpf_get_current_pid_tgid()`.
+     - Logs a message with the process ID via `bpf_trace_printk()`.
+     - Uses `bpf_probe_read_str()` to read the filename from the syscall arguments (`args->filename`).
+     - Calls `bpf_get_current_comm()` to retrieve the command name.
+     - Submits the collected data (`pid`, `comm`, `filename`) to user-space using `events.perf_submit()`.
+   - The first argument to `perf_submit()` is `args`, ensuring compatibility with the BPF framework. The actual data being submitted (the `data_t` structure) is passed in the second argument.
+
+6. **Why `args` is Passed to `perf_submit`**:
+   - While `args` contains the syscall arguments, it is passed to `perf_submit()` for framework compatibility, though it is the `data_t` structure that contains the relevant data that will be processed in user-space.
+
+== User-Space Python Program Explanation
+
+1. **`handle_sys_enter_openat(cpu, data, size)`**:
+   - This function is called when an event is received from the kernel.
+     - `cpu`: The CPU index on which the event was processed.
+     - `data`: The event data (i.e., the `data_t` structure containing `pid`, `comm`, and `filename`).
+     - `size`: The size of the event data.
+   - The function extracts and prints the `pid`, `comm`, and `filename` from the event data.
+
+2. **`bpf_source`**:
+   - The `bpf_source` variable contains the BPF program as a C string. This program is loaded into the kernel via the BCC library in Python.
+
+3. **`bpf = BPF(text=bpf_source)`**:
+   - This line loads and compiles the BPF program provided in the `bpf_source` string. The BPF program is then attached to the kernel to start tracing the `sys_enter_openat` tracepoint.
+
+4. **`bpf.attach_tracepoint(tp="syscalls:sys_enter_openat", fn_name="sys_enter_openat_fn")`**:
+   - This line attaches the BPF program to the `sys_enter_openat` tracepoint in the kernel. The function `sys_enter_openat_fn` is called whenever the `openat` syscall is invoked.
+
+5. **`bpf['events'].open_perf_buffer(handle_sys_enter_openat)`**:
+   - This line opens a perf buffer that will hold the events submitted from the kernel. The user-space handler `handle_sys_enter_openat` is specified to process the events.
+
+6. **`bpf.perf_buffer_poll()`**:
+   - This is a blocking call that waits for events to be submitted from the kernel. When an event is received, the `handle_sys_enter_openat` function is invoked to process the data.
+
+== Key Differences Between Kernel and User-Space Handling
+
+1. **Kernel-Space**: The kernel-side tracepoint handler accesses the raw syscall arguments (`args`) and processes them. It uses `bpf_probe_read_str()` to extract the filename and `bpf_get_current_comm()` to get the command name, then submits the processed data to user-space.
+   
+2. **User-Space**: In user-space, the event handler processes the submitted data (which has already been extracted and formatted in the kernel) and prints it. The event data is passed through the perf buffer and processed asynchronously.
+
+
+== References
+
+1. **BPF Helpers**:
+   - The BPF helpers are essential for interacting with the kernel from BPF programs. To get a complete list of BPF helpers available, refer to the `bpf-helpers` man page:
+     ```
+     man bpf-helpers
+     ```
+   - This man page provides a comprehensive list of BPF helper functions that can be used within BPF programs, such as `bpf_get_current_pid_tgid()`, `bpf_probe_read_str()`, `bpf_get_current_comm()`, and others.
+
+2. **`sched.h` File**:
+   - The definition of `TASK_COMM_LEN` and other related process management constants can be found in the **Linux kernel source code**, typically in the file `include/linux/sched.h`:
+     ```
+     cat /path/to/linux/source/include/linux/sched.h
+     ```
+   - The `TASK_COMM_LEN` constant, which defines the length of the process name buffer, is used in various places in the kernel to manage task-related data.
+
+3. **`/sys/kernel/debug/tracing/events/sys_enter_openat/format`**:
+   - The event format for `sys_enter_openat` can be found in the `/sys/kernel/debug/tracing/events/syscalls/sys_enter_openat/format` file. This file describes the layout of the event data, including the fields and their offsets.
+     - To view the format for this tracepoint:
+       ```
+       cat /sys/kernel/debug/tracing/events/syscalls/sys_enter_openat/format
+       ```
+   - The contents of this file describe the structure of the event generated by the kernel when the `openat` system call is entered. It includes field names, their types, and the offsets for each field. This information is essential for understanding how to correctly interpret the data passed to user-space.
+
+These resources provide the necessary references to understand the BPF helpers, kernel headers, and tracepoint formats used in the program, enabling deeper exploration and customization of BPF-based tracing.
