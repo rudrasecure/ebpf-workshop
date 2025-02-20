@@ -1,0 +1,6 @@
+[submodule "examples/pixie"]
+	path = examples/pixie
+	url = https://github.com/pixie-io/pixie-demos.git
+[submodule "examples/bad-bpf"]
+	path = examples/bad-bpf
+	url = https://github.com/pathtofile/bad-bpf
