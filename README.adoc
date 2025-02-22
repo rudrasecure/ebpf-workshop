@@ -15,6 +15,13 @@
 
 == Malicious eBPF
 
-https://github.com/pathtofile/bad-bpf
+* https://github.com/pathtofile/bad-bpf
+* https://sysdig.com/blog/ebpf-offensive-capabilities/
 
+== Further resources
+
+**Authoritative resources**
+
+* https://cilium.isovalent.com/hubfs/Learning-eBPF%20-%20Full%20book.pdf
+* https://github.com/iovisor/bcc/tree/master
 
