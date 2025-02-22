@@ -13,6 +13,8 @@
 * https://github.com/nikhilh-20/ELFEN
 * https://github.com/recontech404/Kairos
 
-== Malware development
+== Malicious eBPF
+
+https://github.com/pathtofile/bad-bpf
 
 
