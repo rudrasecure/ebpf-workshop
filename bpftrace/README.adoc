@@ -13,4 +13,4 @@ NOTE: Some of the links for the bpftrace manuals may have shifted - please follo
 * syscalls directory - `/sys/kernel/debug/tracing/events/syscalls/`
 * Trace `sys_enter_execve` - `bpftrace -e 't:syscalls:sys_enter_execve { printf("pid: %d -- comm:%s\n", pid,comm); }'`
 * Trace `sys_enter_execve` with the filename - `bpftrace -e 't:syscalls:sys_enter_execve { printf("pid: %d -- comm:%s -- %s\n", pid,comm, str(args->filename)); }'`
-* 
+
