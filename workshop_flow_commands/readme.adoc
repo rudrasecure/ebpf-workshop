@@ -37,7 +37,8 @@
 WARNING: There are some known issues in repeated definitions of macros as of date of this commit. You can safely avoid it by adding the cflag in the python code as mentioned in the `ebpf_python` directory. Reference link:https://github.com/iovisor/bcc/issues/3366#issuecomment-1258054405[Git Issue]
 
 * Write python code
-* Run program in stages
+* Debug output written to `sys/kernel/debug/tracing/trace_pipe`
+
 
 *Instrumenting*
 
