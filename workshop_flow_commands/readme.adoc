@@ -1,0 +1,48 @@
+= Workshop flow
+
+* keep `/sys/kernel/debug/tracing/events/syscalls/` open
+* Check the `sys_enter_execve` format
+* Trace your first syscall - `bpftrace -e 't:syscalls:sys_enter_execve { printf("pid: %d -- comm:%s\n", pid,comm); }'`
+* Add some more info to it `bpftrace -e 't:syscalls:sys_enter_execve { printf("pid: %d -- comm:%s -- %s\n", pid,comm, str(args->filename)); }'`
+
+*BT files*
+
+* Make it neater, put it in a `bt` file and run it
+
+*Forking*
+
+* `echo $$` a bash process on running the `enter_execve` trace and see the difference in bsah process and the forked child
+* Write a c program to replace process image and compile it - ie same bash, and same process id. Comiple and run it while tracing the `enter_execve` tracepoint. `gcc execve.c  -o exec_test`
+* Modify the c programe to `fork()`
+* read `man 2 fork` 
+** See what is returned to the parent, and what is returned to the child
+* Execve does not actually 'return' `man 2 execve`
+* 'sys_exit_execve'
+** `bpftrace -e 't:syscalls:sys_enter_execve { printf("ENTER pid: %d -- comm:%s -- %s\n", pid,comm, str(args->filename)); } t:syscalls:sys_exit_execve { printf("EXIT pid: %d -- ret: %d --comm %s\n",pid, args->ret,comm); }'`
+* read `man 3 errno`
+
+*Userspace*
+
+* `objdump -tT /bin/bash`
+* See the readline fn on the dynamic table
+* Trace it with an entry probe `bpftrace -e 'uprobe:/bin/bash:readline { printf("arg0: %s\n", str(arg0)); }'`
+* `man 3 readline` - Note that arg0 is the prompt, and that the return value is the line read
+* Trace it with a uprobe and a uretprobe
+* `bpftrace -e 'uretprobe:/bin/bash:readline { printf("readline: \"%s\"\n", str(retval)); }'`
+
+*Programs*
+
+* Install python toolchain
+
+WARNING: There are some known issues in repeated definitions of macros as of date of this commit. You can safely avoid it by adding the cflag in the python code as mentioned in the `ebpf_python` directory. Reference link:https://github.com/iovisor/bcc/issues/3366#issuecomment-1258054405[Git Issue]
+
+* Write python code
+* Run program in stages
+
+*Instrumenting*
+
+* Grab cleartext before SSL encryption
+
+*Malware*
+
+* Hide a process
