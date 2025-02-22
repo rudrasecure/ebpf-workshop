@@ -1,0 +1,16 @@
+= Uprobes
+
+== objdump and nm
+
+You can use `objdump` or `nm` to find functions to instrument. `objdump` is a tool to display information about object files. An object file is a file containing object code, that is - the result of compiling source code. It includes machine code (instructions that the processor can execute), data sections, symbols, and other metadata depending on how it was compiled. Object files are usually an intermediate step while building a full program. A linker takes one or more object files and combines them to produce a final executable or a library.
+
+try running `objdump -tT /bin/bash | grep readline`
+
+== Instrumenting readline
+
+`man 3 readline`
+
+* arg0 of readline is the `prompt` `bpftrace -e 'uprobe:/bin/bash:readline { printf("arg0: %s\n", str(arg0)); }'`
+
+NOTE: "RETURN VALUE readline returns the text of the line read. A blank line returns the empty string. If EOF is encountered while reading a line, and the line is empty, NULL is returned. If an EOF is read with a non-empty line, it is treated as a newline."
+
